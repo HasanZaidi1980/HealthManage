@@ -1,0 +1,30 @@
+/* Doctor & Admin Portals — Clean Minimal White/Blue (desktop-first) */
+.clinic {
+  --bg: #FFFFFF; --divider: #E3F2FD; --accent: #1976D2;
+  --head: #212121; --body: #616161;
+  background: var(--bg); color: var(--head);
+  min-height: 100%; display: flex;
+}
+.clinic .sidebar { width: 230px; border-right: 1px solid var(--divider); padding: 18px 12px; flex-shrink: 0; }
+.clinic .sidebar h1 { color: var(--accent); font-size: 18px; margin: 0 0 18px 8px; }
+.clinic .sidebar a { display: block; color: var(--body); padding: 10px 12px; border-radius: 8px; margin-bottom: 4px; font-size: 14px; }
+.clinic .sidebar a.active { background: var(--divider); color: var(--accent); font-weight: 600; }
+.clinic .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.clinic .breadcrumb {
+  border-bottom: 1px solid var(--divider); padding: 12px 24px; font-size: 13px; color: var(--body);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.clinic .breadcrumb b { color: var(--head); }
+.clinic .content { padding: 24px; max-width: 1000px; }
+.clinic h2 { font-size: 18px; color: var(--head); margin: 0 0 16px; }
+.clinic .card { border: 1px solid var(--divider); border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+.clinic table { width: 100%; border-collapse: collapse; }
+.clinic th, .clinic td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--divider); font-size: 14px; }
+.clinic th { color: var(--body); font-weight: 600; }
+.clinic .btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 9px 16px; font-weight: 600; }
+.clinic .btn.ghost { background: #fff; color: var(--accent); border: 1px solid var(--accent); }
+.clinic .btn.sm { padding: 5px 10px; font-size: 13px; }
+.clinic input, .clinic select { padding: 9px 12px; border: 1px solid #cfd8dc; border-radius: 8px; width: 100%; }
+.clinic .field { margin-bottom: 12px; }
+.clinic .field label { display: block; font-size: 13px; color: var(--body); margin-bottom: 4px; }
+.clinic .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
