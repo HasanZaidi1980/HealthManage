@@ -1,4 +1,4 @@
-.login-wrap { min-height: 100%; display: grid; place-items: center; background: #0f1720; padding: 20px; }
+.login-wrap { min-height: 100%; display: grid; place-items: center; background: #1976D2; padding: 20px; }
 .login-card { background: #fff; border-radius: 14px; padding: 32px; width: 360px; max-width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
 .login-card h1 { margin: 0 0 4px; color: #1976D2; }
 .login-card p { margin: 0 0 20px; color: #616161; font-size: 14px; }

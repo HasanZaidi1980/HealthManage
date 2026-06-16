@@ -1,32 +1,34 @@
-/* Patient Portal — Dark / High-Contrast (mobile-first) */
+/* Patient Portal — Clean White/Blue (matches Doctor portal palette).
+   Layout/navigation structure unchanged: top bar + horizontal nav tabs + content.
+   Mobile-first. */
 .patient {
-  --bg: #121212; --card: #1E1E1E; --accent: #00C853;
-  --head: #FAFAFA; --body: #B0BEC5;
-  background: var(--bg); color: var(--body);
+  --bg: #FFFFFF; --card: #FFFFFF; --divider: #E3F2FD; --accent: #1976D2;
+  --head: #212121; --body: #616161;
+  background: var(--bg); color: var(--head);
   min-height: 100%; display: flex; flex-direction: column;
 }
 .patient .topbar {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 14px 18px; background: #1A1A1A; border-bottom: 1px solid #2a2a2a;
+  padding: 14px 18px; background: #FFFFFF; border-bottom: 1px solid var(--divider);
 }
 .patient .topbar h1 { color: var(--accent); font-size: 18px; margin: 0; }
-.patient .logout { background: transparent; color: var(--body); border: 1px solid #333; border-radius: 8px; padding: 6px 12px; }
-.patient .nav { display: flex; gap: 6px; overflow-x: auto; padding: 10px 14px; background: #161616; }
+.patient .logout { background: #fff; color: var(--accent); border: 1px solid var(--accent); border-radius: 8px; padding: 6px 12px; }
+.patient .nav { display: flex; gap: 6px; overflow-x: auto; padding: 10px 14px; background: #fff; border-bottom: 1px solid var(--divider); }
 .patient .nav a { color: var(--body); padding: 8px 12px; border-radius: 8px; white-space: nowrap; font-size: 14px; }
-.patient .nav a.active { background: rgba(0,200,83,0.15); color: var(--accent); }
-.patient .content { padding: 18px; max-width: 760px; width: 100%; margin: 0 auto; }
+.patient .nav a.active { background: var(--divider); color: var(--accent); font-weight: 600; }
+.patient .content { padding: 18px; max-width: 820px; width: 100%; margin: 0 auto; }
 .patient h2 {
   color: var(--head); font-size: 16px; padding-left: 12px; margin: 22px 0 12px;
   border-left: 3px solid var(--accent);
-  box-shadow: -6px 0 14px -6px rgba(0,200,83,0.7); /* green left-glow */
 }
 .patient .card {
   background: var(--card); border-radius: 12px; padding: 16px; margin-bottom: 12px;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--divider);
 }
 .patient .card .name { color: var(--head); font-weight: 600; font-size: 15px; }
-.patient .pill { font-size: 12px; color: var(--accent); }
-.patient .btn { background: var(--accent); color: #062d14; border: none; border-radius: 8px; padding: 10px 16px; font-weight: 700; }
-.patient .btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
-.patient .kv { font-size: 13px; margin: 4px 0; }
+.patient .pill { font-size: 12px; color: var(--accent); font-weight: 600; }
+.patient .btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 10px 16px; font-weight: 700; }
+.patient .btn.ghost { background: #fff; color: var(--accent); border: 1px solid var(--accent); }
+.patient .kv { font-size: 13px; margin: 4px 0; color: var(--body); }
 .patient .kv b { color: var(--head); font-weight: 600; }
+.patient .muted { color: var(--body); }
