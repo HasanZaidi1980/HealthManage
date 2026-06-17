@@ -7,6 +7,7 @@ const links = [
   ["medications", "My Medications"],
   ["conditions", "My Conditions"],
   ["summary", "Health Summary"],
+  ["appointments", "Appointments"],
   ["consents", "Consent"],
 ];
 

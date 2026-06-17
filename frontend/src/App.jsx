@@ -7,11 +7,13 @@ import PDashboard from "./pages/patient/Dashboard";
 import PMeds from "./pages/patient/Medications";
 import PSummary from "./pages/patient/HealthSummary";
 import PConditions from "./pages/patient/Conditions";
+import PAppointments from "./pages/patient/Appointments";
 import PConsents from "./pages/patient/Consents";
 
 import DoctorLayout from "./pages/doctor/DoctorLayout";
 import DDashboard from "./pages/doctor/Dashboard";
 import DPatients from "./pages/doctor/Patients";
+import DSchedule from "./pages/doctor/Schedule";
 import DPatientDetail from "./pages/doctor/PatientDetail";
 
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -31,6 +33,7 @@ export default function App() {
         <Route path="medications" element={<PMeds />} />
         <Route path="summary" element={<PSummary />} />
         <Route path="conditions" element={<PConditions />} />
+        <Route path="appointments" element={<PAppointments />} />
         <Route path="consents" element={<PConsents />} />
       </Route>
 
@@ -38,6 +41,7 @@ export default function App() {
       <Route path="/doctor" element={<ProtectedRoute role="doctor"><DoctorLayout /></ProtectedRoute>}>
         <Route index element={<DDashboard />} />
         <Route path="patients" element={<DPatients />} />
+        <Route path="schedule" element={<DSchedule />} />
         <Route path="patients/:id" element={<DPatientDetail />} />
       </Route>
 

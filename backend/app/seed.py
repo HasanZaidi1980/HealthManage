@@ -1,12 +1,13 @@
 """Synthetic seed: 2 practices, users, and a sample medication list.
 Run:  python -m app.seed   (SYNTHETIC data only)"""
 import json
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from app.core.security import hash_password
 from app.database import Base, SessionLocal, engine
 from app.models.consent import Consent
 from app.models.enums import SubscriptionTier, UserRole
 from app.models.medication import Medication
+from app.models.appointment import Appointment
 from app.models.practice import Practice
 from app.models.record import MedicalRecord
 from app.models.user import User
@@ -75,11 +76,23 @@ def seed():
                     {"name": "Chest X-ray", "date": "2026-03-11", "result": "normal", "flag": "normal"},
                 ],
             })))
+        # Sample appointments for Jordan
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        db.add_all([
+            Appointment(practice_id=a.id, patient_id=pat_a.id, doctor_id=doc_a.id,
+                        scheduled_at=now + timedelta(days=3, hours=2), location="Katy Family Clinic, Room 4",
+                        purpose="Diabetes follow-up", status="scheduled"),
+            Appointment(practice_id=a.id, patient_id=pat_a.id, doctor_id=doc_a.id,
+                        scheduled_at=now - timedelta(days=20), location="Telehealth",
+                        telehealth_link="https://telehealth.example.com/visit/123",
+                        purpose="Medication review", status="completed",
+                        notes="Reviewed warfarin/aspirin interaction; advised INR monitoring."),
+        ])
         # Patient consents to AI processing so the interactions view works in demo
         db.add(Consent(practice_id=a.id, patient_id=pat_a.id,
                        consent_type="ai_processing", version="v1", granted=True))
         db.commit()
-        print("Seeded 2 practices, 5 users, 3 meds, 1 record, 1 consent. Password: password123")
+        print("Seeded 2 practices, 5 users, 3 meds, 1 record, 2 appointments, 1 consent. Password: password123")
     finally:
         db.close()
 

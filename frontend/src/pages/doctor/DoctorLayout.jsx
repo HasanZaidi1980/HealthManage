@@ -11,6 +11,7 @@ export default function DoctorLayout() {
         <h1>HealthManage</h1>
         <NavLink end to="/doctor" className={({ isActive }) => (isActive ? "active" : "")}>Dashboard</NavLink>
         <NavLink to="/doctor/patients" className={({ isActive }) => (isActive ? "active" : "")}>Patient Search & Records</NavLink>
+        <NavLink to="/doctor/schedule" className={({ isActive }) => (isActive ? "active" : "")}>Schedule</NavLink>
       </div>
       <div className="main">
         <div className="breadcrumb">

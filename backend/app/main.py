@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import Base, engine
-from app.routers import admin, auth, conditions, consent, medications, patients, record
+from app.routers import admin, appointment, auth, conditions, consent, medications, patients, record
 import app.models  # noqa: F401  (register all tables)
 
 
@@ -25,6 +25,7 @@ app.include_router(medications.router)
 app.include_router(patients.router)
 app.include_router(record.router)
 app.include_router(conditions.router)
+app.include_router(appointment.router)
 
 
 @app.get("/health", tags=["meta"])

@@ -198,3 +198,49 @@ def explain_condition(*, condition: str, level: str = "simple") -> str:
         if out:
             return _with_explainer_disclaimer(out)
     return _with_explainer_disclaimer(_LEVEL_FALLBACK[level].format(c=condition))
+
+
+def generate_previsit_checklist(*, purpose: str, medications: list[str],
+                                conditions: list[str]) -> dict:
+    """Feature 4 — AI pre-visit checklist. De-identified inputs only.
+
+    Returns {questions, documents, medications_to_mention}. Falls back to a
+    deterministic checklist when no API key is configured.
+    """
+    client = _client()
+    if client is not None:
+        ask = (
+            "Create a concise pre-visit checklist for a patient. Return ONLY a JSON "
+            "object with keys: questions (list of questions to ask the doctor), "
+            "documents (list of documents to bring), medications_to_mention (list). "
+            "Do not fabricate clinical facts or reference a specific patient identity.\n"
+            f"Visit purpose: {purpose}\nActive medications: {json.dumps(medications)}\n"
+            f"Known conditions: {json.dumps(conditions)}"
+        )
+        raw = _complete(ask, max_tokens=600)
+        if raw:
+            try:
+                data = json.loads(raw.replace("```json", "").replace("```", "").strip())
+                if isinstance(data, dict) and "questions" in data:
+                    return data
+            except (json.JSONDecodeError, ValueError):
+                pass
+    # Offline fallback
+    questions = [
+        f"What are the goals for this {purpose.lower()} visit?",
+        "Are there any changes to my treatment plan?",
+        "What symptoms or changes should I watch for afterward?",
+    ]
+    if conditions:
+        questions.append(f"How are my conditions ({', '.join(conditions[:3])}) being managed?")
+    return {
+        "questions": questions,
+        "documents": [
+            "Photo ID and insurance card",
+            "List of current medications and dosages",
+            "Any recent test results, records, or referral letters",
+        ],
+        "medications_to_mention": medications or [
+            "List any medications, vitamins, or supplements you take",
+        ],
+    }

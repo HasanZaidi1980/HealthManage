@@ -25,6 +25,8 @@ export default function PatientDetail() {
   const [conditions, setConditions] = useState([]);
   const [cx, setCx] = useState({ condition: "", level: "simple", text: "", busy: false });
   const cxCache = useRef({});
+  const [appts, setAppts] = useState([]);
+  const [newAppt, setNewAppt] = useState({ scheduled_at: "", purpose: "", location: "", telehealth_link: "" });
 
   function loadMeds() {
     api.get(`/patients/${id}/medications`).then(setMeds).catch((e) => setErr(e.message));
@@ -37,7 +39,38 @@ export default function PatientDetail() {
     api.get(`/patients/${id}`).then(setPatient).catch((e) => setErr(e.message));
     loadMeds(); loadSummary();
     api.get(`/patients/${id}/conditions`).then(setConditions).catch(() => {});
+    loadAppts();
   }, [id]);
+
+  function loadAppts() {
+    api.get(`/patients/${id}/appointments`).then(setAppts).catch(() => {});
+  }
+
+  async function createAppt(e) {
+    e.preventDefault(); setErr("");
+    try {
+      await api.post("/appointments", {
+        patient_id: id,
+        scheduled_at: new Date(newAppt.scheduled_at).toISOString(),
+        purpose: newAppt.purpose,
+        location: newAppt.location || null,
+        telehealth_link: newAppt.telehealth_link || null,
+      });
+      setNewAppt({ scheduled_at: "", purpose: "", location: "", telehealth_link: "" });
+      loadAppts();
+    } catch (e) { setErr(e.message); }
+  }
+
+  async function completeAppt(aid) {
+    const notes = window.prompt("Post-visit notes (optional):", "") ?? "";
+    try { await api.patch(`/appointments/${aid}`, { status: "completed", notes }); loadAppts(); }
+    catch (e) { setErr(e.message); }
+  }
+
+  async function genApptChecklist(aid) {
+    try { await api.post(`/appointments/${aid}/checklist`); loadAppts(); alert("Pre-visit checklist generated for the patient."); }
+    catch (e) { setErr(e.message); }
+  }
 
   async function explainCondition(condition, level) {
     const key = `${condition}|${level}`;
@@ -139,6 +172,52 @@ export default function PatientDetail() {
         </div>
         <div className="field"><label>Clinical indication (optional — AI fills if blank)</label><input value={med.clinical_indication} onChange={(e) => setMed({ ...med, clinical_indication: e.target.value })} /></div>
         <button className="btn">Add</button>
+      </form>
+
+      {/* Appointments */}
+      <h2>Appointments</h2>
+      <div className="card" style={{ padding: 0 }}>
+        <table>
+          <thead><tr><th>When</th><th>Purpose</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            {appts.map((a) => (
+              <tr key={a.id}>
+                <td>{new Date(a.scheduled_at).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}</td>
+                <td>{a.purpose}{a.notes ? <div className="muted" style={{ fontSize: 12 }}>{a.notes}</div> : null}</td>
+                <td><span className="badge low" style={{ background: a.status === "completed" ? "#9e9e9e" : undefined }}>{a.status}</span></td>
+                <td>
+                  {a.status === "scheduled" && (
+                    <div className="row" style={{ gap: 6 }}>
+                      <button className="btn ghost sm" onClick={() => genApptChecklist(a.id)}>
+                        {a.has_checklist ? "Checklist ✓" : "Checklist"}
+                      </button>
+                      <button className="btn sm" onClick={() => completeAppt(a.id)}>Complete</button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {appts.length === 0 && <tr><td colSpan={4} className="empty">No appointments.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+      <form className="card" onSubmit={createAppt}>
+        <b>Schedule appointment</b>
+        <div className="grid2" style={{ marginTop: 10 }}>
+          <div className="field"><label>Date & time</label>
+            <input type="datetime-local" required value={newAppt.scheduled_at}
+              onChange={(e) => setNewAppt({ ...newAppt, scheduled_at: e.target.value })} /></div>
+          <div className="field"><label>Purpose</label>
+            <input required value={newAppt.purpose}
+              onChange={(e) => setNewAppt({ ...newAppt, purpose: e.target.value })} /></div>
+          <div className="field"><label>Location</label>
+            <input value={newAppt.location}
+              onChange={(e) => setNewAppt({ ...newAppt, location: e.target.value })} /></div>
+          <div className="field"><label>Telehealth link (optional)</label>
+            <input value={newAppt.telehealth_link}
+              onChange={(e) => setNewAppt({ ...newAppt, telehealth_link: e.target.value })} /></div>
+        </div>
+        <button className="btn">Schedule</button>
       </form>
 
       {/* Condition Explainer */}

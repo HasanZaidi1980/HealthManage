@@ -1,4 +1,5 @@
 """Importing every model here ensures Base.metadata sees all tables."""
+from app.models.appointment import Appointment
 from app.models.audit import AuditLog
 from app.models.consent import Consent
 from app.models.enums import SubscriptionTier, UserRole
@@ -8,6 +9,6 @@ from app.models.practice import Practice
 from app.models.record import HealthSummary, MedicalRecord, SummaryShare
 from app.models.user import User
 
-__all__ = ["Practice", "User", "AuditLog", "Consent", "Medication",
+__all__ = ["Practice", "User", "AuditLog", "Consent", "Medication", "Appointment",
            "MedicalRecord", "HealthSummary", "SummaryShare", "ConditionExplanation",
            "UserRole", "SubscriptionTier"]
