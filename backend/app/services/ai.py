@@ -145,3 +145,56 @@ def generate_health_summary(*, merged: dict, medications: list[dict],
                 pass  # fall through to offline
 
     return _summary.offline_snapshot(merged, medications, audience)
+
+
+EXPLAINER_DISCLAIMER = (
+    "This explanation is for informational purposes only. "
+    "Please consult your care team for personalized medical advice."
+)
+
+_LEVEL_SPECS = {
+    "simple": "one short paragraph in plain language for someone with no medical background",
+    "moderate": ("3 to 5 short paragraphs, in plain language, covering causes, symptoms, "
+                 "treatment options, and lifestyle impact"),
+    "detailed": ("a clinically structured breakdown (pathophysiology, presentation, diagnosis, "
+                 "and management) for a medically literate reader or caregiver"),
+}
+
+_LEVEL_FALLBACK = {
+    "simple": ("{c} is a health condition your care team has noted. In simple terms, it affects how "
+               "part of your body works and is usually managed with a care plan from your provider."),
+    "moderate": ("{c} — overview\n\nCauses: {c} can have several contributing factors; your provider "
+                 "can explain what applies to you.\n\nSymptoms: people may notice different signs, and "
+                 "some have none at all.\n\nTreatment: management often combines lifestyle steps and, "
+                 "when needed, medication.\n\nLifestyle: day-to-day habits can make a meaningful "
+                 "difference in how well {c} is controlled."),
+    "detailed": ("{c} — clinical overview\n\nPathophysiology: underlying mechanism varies by condition.\n"
+                 "Presentation: signs and symptoms differ between individuals.\n"
+                 "Diagnosis: typically based on history, exam, and relevant testing.\n"
+                 "Management: guided by current clinical guidelines and individual factors."),
+}
+
+
+def _with_explainer_disclaimer(text: str) -> str:
+    if EXPLAINER_DISCLAIMER in text:
+        return text
+    return text.rstrip() + "\n\n" + EXPLAINER_DISCLAIMER
+
+
+def explain_condition(*, condition: str, level: str = "simple") -> str:
+    """Feature 3 — AI Condition Explainer. Generic, de-identified educational text.
+
+    Sends only the condition name (no patient identifiers) to the model. Always
+    appends the required disclaimer. Falls back to offline templated text when no
+    key is configured.
+    """
+    level = level if level in _LEVEL_SPECS else "simple"
+    client = _client()
+    if client is not None:
+        ask = (f"Explain the medical condition '{condition}' as {_LEVEL_SPECS[level]}. "
+               "Do not reference any specific patient or invent patient details. "
+               "Do not fabricate medical facts.")
+        out = _complete(ask, max_tokens=900)
+        if out:
+            return _with_explainer_disclaimer(out)
+    return _with_explainer_disclaimer(_LEVEL_FALLBACK[level].format(c=condition))

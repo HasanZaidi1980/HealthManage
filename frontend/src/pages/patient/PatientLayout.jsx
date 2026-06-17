@@ -5,6 +5,7 @@ import "../../styles/patient.css";
 const links = [
   ["", "Dashboard"],
   ["medications", "My Medications"],
+  ["conditions", "My Conditions"],
   ["summary", "Health Summary"],
   ["consents", "Consent"],
 ];

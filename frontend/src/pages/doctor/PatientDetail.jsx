@@ -21,6 +21,8 @@ export default function PatientDetail() {
   const [busy, setBusy] = useState(false);
   const [med, setMed] = useState({ name_generic: "", name_brand: "", dosage: "", frequency: "", clinical_indication: "" });
   const [rec, setRec] = useState({ title: "", data: '{\n  "conditions": [],\n  "allergies": [],\n  "labs": []\n}' });
+  const [conditions, setConditions] = useState([]);
+  const [cx, setCx] = useState({ condition: "", level: "simple", text: "", busy: false });
 
   function loadMeds() {
     api.get(`/patients/${id}/medications`).then(setMeds).catch((e) => setErr(e.message));
@@ -32,7 +34,16 @@ export default function PatientDetail() {
   useEffect(() => {
     api.get(`/patients/${id}`).then(setPatient).catch((e) => setErr(e.message));
     loadMeds(); loadSummary();
+    api.get(`/patients/${id}/conditions`).then(setConditions).catch(() => {});
   }, [id]);
+
+  async function explainCondition(condition, level) {
+    setCx((s) => ({ ...s, condition, level, busy: true }));
+    try {
+      const r = await api.post(`/patients/${id}/conditions/explain`, { condition, level });
+      setCx({ condition, level, text: r.explanation, busy: false });
+    } catch (e) { setErr(e.message); setCx((s) => ({ ...s, busy: false })); }
+  }
 
   async function addMed(e) {
     e.preventDefault(); setErr("");
@@ -121,6 +132,37 @@ export default function PatientDetail() {
         <div className="field"><label>Clinical indication (optional — AI fills if blank)</label><input value={med.clinical_indication} onChange={(e) => setMed({ ...med, clinical_indication: e.target.value })} /></div>
         <button className="btn">Add</button>
       </form>
+
+      {/* Condition Explainer */}
+      <h2>Condition Explainer</h2>
+      <div className="card">
+        <p className="muted" style={{ marginTop: 0 }}>Generate a patient-ready explanation to share or print.</p>
+        {conditions.length === 0 && <div className="empty">No conditions on file (upload a record below).</div>}
+        <div className="row" style={{ flexWrap: "wrap", gap: 8 }}>
+          {conditions.map((c) => (
+            <button key={c.name} className="btn ghost sm" onClick={() => explainCondition(c.name, "simple")}>
+              {c.name}
+            </button>
+          ))}
+        </div>
+        {cx.condition && (
+          <div style={{ marginTop: 14 }}>
+            <div className="row" style={{ gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+              {["simple", "moderate", "detailed"].map((lvl) => (
+                <button key={lvl}
+                  className={`btn ${cx.level === lvl ? "" : "ghost"} sm`}
+                  onClick={() => explainCondition(cx.condition, lvl)}>
+                  {lvl[0].toUpperCase() + lvl.slice(1)}
+                </button>
+              ))}
+              {cx.text && <button className="btn ghost sm" onClick={() => window.print()}>Print</button>}
+            </div>
+            <b>{cx.condition}</b>
+            {cx.busy ? <p className="muted">Generating…</p>
+              : <p style={{ whiteSpace: "pre-line", lineHeight: 1.6 }}>{cx.text}</p>}
+          </div>
+        )}
+      </div>
 
       {/* Health Summary */}
       <h2>One-Page Snapshot</h2>

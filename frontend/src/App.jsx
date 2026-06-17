@@ -6,6 +6,7 @@ import PatientLayout from "./pages/patient/PatientLayout";
 import PDashboard from "./pages/patient/Dashboard";
 import PMeds from "./pages/patient/Medications";
 import PSummary from "./pages/patient/HealthSummary";
+import PConditions from "./pages/patient/Conditions";
 import PConsents from "./pages/patient/Consents";
 
 import DoctorLayout from "./pages/doctor/DoctorLayout";
@@ -29,6 +30,7 @@ export default function App() {
         <Route index element={<PDashboard />} />
         <Route path="medications" element={<PMeds />} />
         <Route path="summary" element={<PSummary />} />
+        <Route path="conditions" element={<PConditions />} />
         <Route path="consents" element={<PConsents />} />
       </Route>
 
