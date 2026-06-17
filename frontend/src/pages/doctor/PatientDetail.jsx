@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "../../api/client";
 import Markdown from "../../components/Markdown";
@@ -24,6 +24,7 @@ export default function PatientDetail() {
   const [rec, setRec] = useState({ title: "", data: '{\n  "conditions": [],\n  "allergies": [],\n  "labs": []\n}' });
   const [conditions, setConditions] = useState([]);
   const [cx, setCx] = useState({ condition: "", level: "simple", text: "", busy: false });
+  const cxCache = useRef({});
 
   function loadMeds() {
     api.get(`/patients/${id}/medications`).then(setMeds).catch((e) => setErr(e.message));
@@ -39,9 +40,15 @@ export default function PatientDetail() {
   }, [id]);
 
   async function explainCondition(condition, level) {
+    const key = `${condition}|${level}`;
+    if (cxCache.current[key] !== undefined) {  // reuse this session's fetch
+      setCx({ condition, level, text: cxCache.current[key], busy: false });
+      return;
+    }
     setCx((s) => ({ ...s, condition, level, busy: true }));
     try {
       const r = await api.post(`/patients/${id}/conditions/explain`, { condition, level });
+      cxCache.current[key] = r.explanation;
       setCx({ condition, level, text: r.explanation, busy: false });
     } catch (e) { setErr(e.message); setCx((s) => ({ ...s, busy: false })); }
   }

@@ -66,3 +66,20 @@ def test_condition_explainer(client):
     # Invalid level rejected by schema
     assert client.post("/me/conditions/explain", headers=h(pat),
                        json={"condition": "X", "level": "bogus"}).status_code == 422
+
+    # Caching: repeated calls for same (condition, level) reuse one stored row
+    from app.database import SessionLocal
+    from app.models.explanation import ConditionExplanation
+    a = client.post(f"/patients/{pid}/conditions/explain", headers=h(doc),
+                    json={"condition": "Hypertension", "level": "simple"}).json()
+    b = client.post(f"/patients/{pid}/conditions/explain", headers=h(doc),
+                    json={"condition": "Hypertension", "level": "simple"}).json()
+    assert a["explanation"] == b["explanation"]
+    db = SessionLocal()
+    try:
+        n = (db.query(ConditionExplanation)
+             .filter(ConditionExplanation.condition == "hypertension",
+                     ConditionExplanation.level == "simple").count())
+    finally:
+        db.close()
+    assert n == 1  # cached once, not regenerated per click

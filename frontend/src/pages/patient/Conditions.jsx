@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../api/client";
 import Markdown from "../../components/Markdown";
@@ -17,15 +17,23 @@ export default function Conditions() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [needConsent, setNeedConsent] = useState(false);
+  const cacheRef = useRef({});
 
   useEffect(() => {
     api.get("/me/conditions").then(setConditions).catch((e) => setErr(e.message));
   }, []);
 
   async function explain(condition, lvl) {
+    const key = `${condition}|${lvl}`;
+    if (cacheRef.current[key] !== undefined) {  // already fetched this session
+      setExplanation(cacheRef.current[key]);
+      setBusy(false);
+      return;
+    }
     setBusy(true); setErr(""); setNeedConsent(false);
     try {
       const r = await api.post("/me/conditions/explain", { condition, level: lvl });
+      cacheRef.current[key] = r.explanation;
       setExplanation(r.explanation);
     } catch (e) {
       if (/consent/i.test(e.message)) setNeedConsent(true);

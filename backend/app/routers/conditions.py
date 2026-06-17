@@ -7,6 +7,7 @@ simple / moderate / detailed. Every explanation carries the required disclaimer.
 import json
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.audit import write_audit
@@ -14,6 +15,7 @@ from app.core.consent import has_consent
 from app.core.deps import require_feature, require_role, scoped_query
 from app.database import get_db
 from app.models.enums import UserRole
+from app.models.explanation import ConditionExplanation
 from app.models.record import MedicalRecord
 from app.models.user import User
 from app.schemas.condition import ConditionOut, ExplainRequest, ExplanationOut
@@ -49,9 +51,25 @@ def _conditions_for(db, actor, patient_id) -> list[ConditionOut]:
     return out
 
 
-def _explain(condition: str, level: str) -> ExplanationOut:
-    text = ai.explain_condition(condition=condition, level=level)
-    return ExplanationOut(condition=condition, level=level, explanation=text,
+def _explain(db: Session, practice_id, condition: str, level: str) -> ExplanationOut:
+    key = condition.strip().lower()
+    row = (db.query(ConditionExplanation)
+           .filter(ConditionExplanation.practice_id == practice_id,
+                   ConditionExplanation.condition == key,
+                   ConditionExplanation.level == level).first())
+    if row is None:
+        text = ai.explain_condition(condition=condition, level=level)
+        row = ConditionExplanation(practice_id=practice_id, condition=key, level=level, explanation=text)
+        db.add(row)
+        try:
+            db.commit()
+        except IntegrityError:  # another request cached it first
+            db.rollback()
+            row = (db.query(ConditionExplanation)
+                   .filter(ConditionExplanation.practice_id == practice_id,
+                           ConditionExplanation.condition == key,
+                           ConditionExplanation.level == level).first())
+    return ExplanationOut(condition=condition, level=level, explanation=row.explanation,
                           disclaimer=EXPLAINER_DISCLAIMER)
 
 
@@ -69,7 +87,7 @@ def my_explain(payload: ExplainRequest, db: Session = Depends(get_db),
                        consent_type="ai_processing"):
         raise HTTPException(status_code=403, detail="AI processing consent required.")
     write_audit(db, actor=patient, action_type="condition.explain", data_accessed=payload.condition)
-    return _explain(payload.condition, payload.level)
+    return _explain(db, patient.practice_id, payload.condition, payload.level)
 
 
 # ---------- Doctor ----------
@@ -86,4 +104,4 @@ def doctor_explain(patient_id: str, payload: ExplainRequest, db: Session = Depen
     _get_patient(db, doctor, patient_id)
     write_audit(db, actor=doctor, action_type="condition.explain",
                 data_accessed=f"patient:{patient_id}:{payload.condition}")
-    return _explain(payload.condition, payload.level)
+    return _explain(db, doctor.practice_id, payload.condition, payload.level)
