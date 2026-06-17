@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../api/client";
+import Markdown from "../../components/Markdown";
 
 export default function Medications() {
   const [meds, setMeds] = useState([]);
@@ -47,7 +48,7 @@ export default function Medications() {
           </div>
           <div className="kv"><b>Dose:</b> {m.dosage} · {m.frequency}</div>
           <div className="kv"><b>Prescriber:</b> {m.prescribing_provider || "—"}</div>
-          {m.plain_language_purpose && <div className="kv muted">{m.plain_language_purpose}</div>}
+          {m.plain_language_purpose && <div className="kv muted"><Markdown>{m.plain_language_purpose}</Markdown></div>}
         </div>
       ))}
     </>

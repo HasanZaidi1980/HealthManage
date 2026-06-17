@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../api/client";
+import Markdown from "../../components/Markdown";
 
 const LEVELS = [
   ["simple", "Simple"],
@@ -85,7 +86,7 @@ export default function Conditions() {
               ))}
             </div>
             {busy ? <div className="kv muted">Generating…</div>
-              : <div className="kv" style={{ whiteSpace: "pre-line", lineHeight: 1.6 }}>{explanation}</div>}
+              : <Markdown>{explanation}</Markdown>}
           </div>
         </>
       )}

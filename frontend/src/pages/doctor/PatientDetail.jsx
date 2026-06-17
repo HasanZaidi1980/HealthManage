@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "../../api/client";
+import Markdown from "../../components/Markdown";
 
 const SECTIONS = [
   ["chief_conditions", "Chief Conditions"],
@@ -114,7 +115,7 @@ export default function PatientDetail() {
               <tr key={m.id}>
                 <td>{m.name_generic}{m.name_brand ? ` (${m.name_brand})` : ""}</td>
                 <td>{m.dosage} · {m.frequency}</td>
-                <td className="muted">{m.clinical_indication || "—"}</td>
+                <td className="muted">{m.clinical_indication ? <Markdown>{m.clinical_indication}</Markdown> : "—"}</td>
               </tr>
             ))}
             {meds.length === 0 && <tr><td colSpan={3} className="empty">No medications.</td></tr>}
@@ -159,7 +160,7 @@ export default function PatientDetail() {
             </div>
             <b>{cx.condition}</b>
             {cx.busy ? <p className="muted">Generating…</p>
-              : <p style={{ whiteSpace: "pre-line", lineHeight: 1.6 }}>{cx.text}</p>}
+              : <Markdown>{cx.text}</Markdown>}
           </div>
         )}
       </div>

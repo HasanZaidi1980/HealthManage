@@ -13,3 +13,19 @@ input, select, textarea { font: inherit; }
 .badge.moderate { background: #f9a825; color: #222; }
 .badge.low { background: #2e7d32; color: #fff; }
 .empty { opacity: 0.6; font-style: italic; padding: 8px 0; }
+
+/* Rendered markdown (AI prose) */
+.md { line-height: 1.6; }
+.md p { margin: 8px 0; }
+.md p:first-child { margin-top: 0; }
+.md ul, .md ol { margin: 8px 0; padding-left: 20px; }
+.md li { margin: 3px 0; }
+.md table { border-collapse: collapse; margin: 8px 0; width: 100%; }
+.md th, .md td { border: 1px solid rgba(127,127,127,.4); padding: 6px 8px; text-align: left; font-size: 13px; }
+.md code { background: rgba(127,127,127,0.15); padding: 1px 4px; border-radius: 4px; font-size: 12px; }
+.md blockquote { border-left: 3px solid rgba(127,127,127,.4); margin: 8px 0; padding-left: 10px; }
+.md hr { border: none; border-top: 1px solid rgba(127,127,127,.3); margin: 12px 0; }
+/* tame headings + strip themed h2 left-border/glow inside markdown */
+.patient .md h1, .clinic .md h1, .md h1 { font-size: 17px; margin: 12px 0 6px; padding-left: 0; border-left: none; box-shadow: none; }
+.patient .md h2, .clinic .md h2, .md h2 { font-size: 15px; margin: 12px 0 6px; padding-left: 0; border-left: none; box-shadow: none; }
+.patient .md h3, .clinic .md h3, .md h3 { font-size: 14px; margin: 10px 0 4px; padding-left: 0; border-left: none; box-shadow: none; }

@@ -25,7 +25,8 @@ Verified end-to-end: foundation suite ran against PostgreSQL 16; full suite
 
 ```bash
 cd backend
-python -m venv .venv && source .venv/bin/activate
+python -m venv .venv 
+.\myenv\Scripts\Activate.ps1
 pip install -r requirements.txt
 cp .env.example .env          # set SECRET_KEY + DATABASE_URL
 
