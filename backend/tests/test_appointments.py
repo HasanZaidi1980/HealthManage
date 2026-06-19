@@ -45,7 +45,16 @@ def test_appointments(client):
     assert r.status_code == 201, r.text
     appt = r.json()
     assert appt["provider_name"] == "Dr A" and appt["status"] == "scheduled"
+    assert appt["location"] == "Room 4"
     aid = appt["id"]
+
+    # Location defaults to the practice/clinic name when omitted
+    d2 = client.post("/appointments", headers=h(doc), json={
+        "patient_id": pid, "scheduled_at": soon, "purpose": "Default-loc check"}).json()
+    assert d2["location"] == "Appt Clinic"
+    # Delete it
+    assert client.delete(f"/appointments/{d2['id']}", headers=h(doc)).status_code == 204
+    assert all(a["id"] != d2["id"] for a in client.get(f"/patients/{pid}/appointments", headers=h(doc)).json())
 
     # Doctor schedule + patient list
     assert len(client.get("/appointments?range=week", headers=h(doc)).json()) == 1

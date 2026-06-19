@@ -9,6 +9,7 @@ from app.models.enums import UserRole
 from app.models.practice import Practice
 from app.models.user import User
 from app.schemas import LoginRequest, RegisterPracticeRequest, TokenResponse, UserOut
+from app.schemas import PracticeOut
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -46,3 +47,9 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserOut)
 def me(current: User = Depends(get_current_user)):
     return current
+
+
+@router.get("/me/practice", response_model=PracticeOut)
+def my_practice(current: User = Depends(get_current_user)):
+    """Practice info for the signed-in user (name/tier). No PHI."""
+    return current.practice

@@ -26,7 +26,10 @@ export default function PatientDetail() {
   const [cx, setCx] = useState({ condition: "", level: "simple", text: "", busy: false });
   const cxCache = useRef({});
   const [appts, setAppts] = useState([]);
+  const [clinicName, setClinicName] = useState("");
   const [newAppt, setNewAppt] = useState({ scheduled_at: "", purpose: "", location: "", telehealth_link: "" });
+  const [completing, setCompleting] = useState(null);   // appt id being completed
+  const [completeNotes, setCompleteNotes] = useState("");
 
   function loadMeds() {
     api.get(`/patients/${id}/medications`).then(setMeds).catch((e) => setErr(e.message));
@@ -40,6 +43,10 @@ export default function PatientDetail() {
     loadMeds(); loadSummary();
     api.get(`/patients/${id}/conditions`).then(setConditions).catch(() => {});
     loadAppts();
+    api.get("/auth/me/practice").then((p) => {
+      setClinicName(p.name);
+      setNewAppt((s) => ({ ...s, location: s.location || p.name }));
+    }).catch(() => {});
   }, [id]);
 
   function loadAppts() {
@@ -56,14 +63,26 @@ export default function PatientDetail() {
         location: newAppt.location || null,
         telehealth_link: newAppt.telehealth_link || null,
       });
-      setNewAppt({ scheduled_at: "", purpose: "", location: "", telehealth_link: "" });
+      setNewAppt({ scheduled_at: "", purpose: "", location: clinicName, telehealth_link: "" });
       loadAppts();
     } catch (e) { setErr(e.message); }
   }
 
-  async function completeAppt(aid) {
-    const notes = window.prompt("Post-visit notes (optional):", "") ?? "";
-    try { await api.patch(`/appointments/${aid}`, { status: "completed", notes }); loadAppts(); }
+  async function submitComplete(aid) {
+    try {
+      await api.patch(`/appointments/${aid}`, { status: "completed", notes: completeNotes });
+      setCompleting(null); setCompleteNotes(""); loadAppts();
+    } catch (e) { setErr(e.message); }
+  }
+
+  async function cancelAppt(aid) {
+    try { await api.patch(`/appointments/${aid}`, { status: "cancelled" }); loadAppts(); }
+    catch (e) { setErr(e.message); }
+  }
+
+  async function deleteAppt(aid) {
+    if (!window.confirm("Delete this appointment permanently?")) return;
+    try { await api.del(`/appointments/${aid}`); loadAppts(); }
     catch (e) { setErr(e.message); }
   }
 
@@ -184,15 +203,30 @@ export default function PatientDetail() {
               <tr key={a.id}>
                 <td>{new Date(a.scheduled_at).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}</td>
                 <td>{a.purpose}{a.notes ? <div className="muted" style={{ fontSize: 12 }}>{a.notes}</div> : null}</td>
-                <td><span className="badge low" style={{ background: a.status === "completed" ? "#9e9e9e" : undefined }}>{a.status}</span></td>
+                <td><span className="badge low" style={{ background: a.status === "completed" ? "#9e9e9e" : a.status === "cancelled" ? "#c62828" : undefined }}>{a.status}</span></td>
                 <td>
-                  {a.status === "scheduled" && (
-                    <div className="row" style={{ gap: 6 }}>
-                      <button className="btn ghost sm" onClick={() => genApptChecklist(a.id)}>
-                        {a.has_checklist ? "Checklist ✓" : "Checklist"}
-                      </button>
-                      <button className="btn sm" onClick={() => completeAppt(a.id)}>Complete</button>
-                    </div>
+                  {a.status === "scheduled" ? (
+                    completing === a.id ? (
+                      <div style={{ minWidth: 220 }}>
+                        <textarea rows={2} placeholder="Post-visit notes (optional)" style={{ width: "100%" }}
+                          value={completeNotes} onChange={(e) => setCompleteNotes(e.target.value)} />
+                        <div className="row" style={{ gap: 6, marginTop: 4 }}>
+                          <button className="btn sm" onClick={() => submitComplete(a.id)}>Save & complete</button>
+                          <button className="btn ghost sm" onClick={() => { setCompleting(null); setCompleteNotes(""); }}>Cancel</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="row" style={{ gap: 6, flexWrap: "wrap" }}>
+                        <button className="btn ghost sm" onClick={() => genApptChecklist(a.id)}>
+                          {a.has_checklist ? "Checklist ✓" : "Checklist"}
+                        </button>
+                        <button className="btn sm" onClick={() => { setCompleting(a.id); setCompleteNotes(""); }}>Complete</button>
+                        <button className="btn ghost sm" onClick={() => cancelAppt(a.id)}>Cancel visit</button>
+                        <button className="btn ghost sm" onClick={() => deleteAppt(a.id)}>Delete</button>
+                      </div>
+                    )
+                  ) : (
+                    <button className="btn ghost sm" onClick={() => deleteAppt(a.id)}>Delete</button>
                   )}
                 </td>
               </tr>

@@ -34,6 +34,7 @@ export const api = {
   get: (p) => request("GET", p),
   post: (p, b) => request("POST", p, b),
   patch: (p, b) => request("PATCH", p, b),
+  del: (p) => request("DELETE", p),
   // For binary downloads (PDF)
   download: async (p) => {
     const res = await fetch(`${BASE}${p}`, { headers: { Authorization: `Bearer ${getToken()}` } });

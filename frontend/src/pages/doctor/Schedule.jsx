@@ -37,14 +37,20 @@ export default function Schedule() {
       {Object.entries(groups).map(([day, list]) => (
         <div className="card" key={day}>
           <b>{day}</b>
-          <table style={{ marginTop: 8 }}>
+          <table style={{ marginTop: 8, tableLayout: "fixed", width: "100%" }}>
+            <colgroup>
+              <col style={{ width: "90px" }} />
+              <col style={{ width: "45%" }} />
+              <col style={{ width: "35%" }} />
+              <col style={{ width: "110px" }} />
+            </colgroup>
             <tbody>
               {list.map((a) => (
                 <tr key={a.id}>
-                  <td style={{ width: 90 }}>{new Date(a.scheduled_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</td>
+                  <td>{new Date(a.scheduled_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</td>
                   <td>{a.purpose}</td>
                   <td className="muted">{a.location || (a.telehealth_link ? "Telehealth" : "—")}</td>
-                  <td><span className="badge low" style={{ background: a.status === "completed" ? "#9e9e9e" : undefined }}>{a.status}</span></td>
+                  <td><span className="badge low" style={{ background: a.status === "completed" ? "#9e9e9e" : a.status === "cancelled" ? "#c62828" : undefined }}>{a.status}</span></td>
                 </tr>
               ))}
             </tbody>

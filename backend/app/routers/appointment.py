@@ -87,13 +87,23 @@ def create_appt(payload: AppointmentCreate, db: Session = Depends(get_db),
     appt = Appointment(
         practice_id=doctor.practice_id, patient_id=payload.patient_id,
         doctor_id=payload.doctor_id or doctor.id,
-        scheduled_at=_naive(payload.scheduled_at), location=payload.location,
+        scheduled_at=_naive(payload.scheduled_at),
+        location=payload.location or (doctor.practice.name if doctor.practice else None),
         telehealth_link=payload.telehealth_link, purpose=payload.purpose)
     db.add(appt)
     db.commit()
     db.refresh(appt)
     write_audit(db, actor=doctor, action_type="appointment.create", data_accessed=f"patient:{payload.patient_id}")
     return _serialize(db, appt)
+
+
+@router.delete("/appointments/{appt_id}", status_code=204)
+def delete_appt(appt_id: str, db: Session = Depends(get_db),
+                doctor: User = Depends(doctor_only), _=Depends(needs_feature)):
+    appt = _get_appt(db, doctor, appt_id)
+    db.delete(appt)
+    db.commit()
+    write_audit(db, actor=doctor, action_type="appointment.delete", data_accessed=str(appt_id))
 
 
 @router.get("/appointments", response_model=list[AppointmentOut])
