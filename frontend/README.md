@@ -19,6 +19,7 @@ backend. Three role-routed portals share one login.
 ## Run
 
 ```bash
+cd frontend/
 npm install
 cp .env.example .env      # VITE_API_URL=http://localhost:8000
 npm run dev               # http://localhost:5173
